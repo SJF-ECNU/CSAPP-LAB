@@ -1,7 +1,7 @@
 # CSAPP-LAB
 
-datalab finished
-bomblab finished
-attacklab finished
-cachelab  finished score=50
-malloclab finished score=92
+datalab finished\n
+bomblab finished\n
+attacklab finished\n
+cachelab  finished score=50\n
+malloclab finished score=92\n
