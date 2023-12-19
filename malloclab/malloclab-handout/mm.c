@@ -22,28 +22,28 @@ team_t team = {
     ""};
 
 // 定义了一些宏，用于内存管理
-#define ALIGNMENT 8 // 内存对齐
-#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~0x7) // 对齐大小
-#define SIZE_T_SIZE (ALIGN(sizeof(size_t))) // size_t的对齐大小
-#define WSIZE 4 // 头部/脚部的大小
-#define DSIZE 8 // 双字
-#define CHUNKSIZE (1 << 8) // 扩展堆时的默认大小
-#define MAX(x, y) ((x) > (y) ? (x) : (y)) // 最大值
-#define MIN(x, y) ((x) > (y) ? (y) : (x)) // 最小值
-#define PACK(size, alloc) ((size) | (alloc)) // 将size和alloc打包
-#define GET(p) (*(unsigned int *)(p)) // 从指针p读取
-#define PUT(p, val) ((*(unsigned int *)(p)) = (val)) // 写入val到指针p
-#define GET_SIZE(p) (GET(p) & ~0x7) // 从指针p读取有效载荷大小
-#define GET_ALLOC(p) (GET(p) & 0x1) // 从指针p读取分配位
+#define ALIGNMENT 8                                                          // 内存对齐
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~0x7)                      // 对齐大小
+#define SIZE_T_SIZE (ALIGN(sizeof(size_t)))                                  // size_t的对齐大小
+#define WSIZE 4                                                              // 头部/脚部的大小
+#define DSIZE 8                                                              // 双字
+#define CHUNKSIZE (1 << 8)                                                   // 扩展堆时的默认大小
+#define MAX(x, y) ((x) > (y) ? (x) : (y))                                    // 最大值
+#define MIN(x, y) ((x) > (y) ? (y) : (x))                                    // 最小值
+#define PACK(size, alloc) ((size) | (alloc))                                 // 将size和alloc打包
+#define GET(p) (*(unsigned int *)(p))                                        // 从指针p读取
+#define PUT(p, val) ((*(unsigned int *)(p)) = (val))                         // 写入val到指针p
+#define GET_SIZE(p) (GET(p) & ~0x7)                                          // 从指针p读取有效载荷大小
+#define GET_ALLOC(p) (GET(p) & 0x1)                                          // 从指针p读取分配位
 #define GET_HEAD(num) ((unsigned int *)(long)(GET(heap_list + WSIZE * num))) // 给定链表序号，返回链表头指针
-#define GET_PRE(bp) ((unsigned int *)(long)(GET(bp))) // 给定有效载荷，返回前驱的有效载荷指针
-#define GET_SUC(bp) ((unsigned int *)(long)(GET((unsigned int *)bp + 1))) // 给定有效载荷，返回后继的有效载荷指针
-#define GET_PTR(p) ((unsigned int *)(long)(GET(p))) // 读地址存的指针
-#define HDRP(bp) ((char *)(bp)-WSIZE) // 根据有效载荷指针获得该块的头标签
-#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE) // 根据有效载荷指针获得该块的尾标签
-#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp)-WSIZE))) // 根据有效载荷指针获得前一块的有效载荷指针
-#define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE(((char *)(bp)-DSIZE))) // 根据有效载荷指针获得后一块的有效载荷指针
-#define CLASS_SIZE 16 // 链表数目
+#define GET_PRE(bp) ((unsigned int *)(long)(GET(bp)))                        // 给定有效载荷，返回前驱的有效载荷指针
+#define GET_SUC(bp) ((unsigned int *)(long)(GET((unsigned int *)bp + 1)))    // 给定有效载荷，返回后继的有效载荷指针
+#define GET_PTR(p) ((unsigned int *)(long)(GET(p)))                          // 读地址存的指针
+#define HDRP(bp) ((char *)(bp)-WSIZE)                                        // 根据有效载荷指针获得该块的头标签
+#define FTRP(bp) ((char *)(bp) + GET_SIZE(HDRP(bp)) - DSIZE)                 // 根据有效载荷指针获得该块的尾标签
+#define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp)-WSIZE)))        // 根据有效载荷指针获得前一块的有效载荷指针
+#define PREV_BLKP(bp) ((char *)(bp)-GET_SIZE(((char *)(bp)-DSIZE)))          // 根据有效载荷指针获得后一块的有效载荷指针
+#define CLASS_SIZE 16                                                        // 链表数目
 
 static char *heap_list; // 堆顶，指向序言块的第二块
 
@@ -162,21 +162,21 @@ void insert(void *bp)
     if (prev != NULL)
     {
         PUT(prev + 1, bp);
-        PUT(bp, prev);     
+        PUT(bp, prev);
     }
     else
     {
-        PUT(heap_list + WSIZE * num, bp); 
-        PUT(bp, NULL);                    
+        PUT(heap_list + WSIZE * num, bp);
+        PUT(bp, NULL);
     }
     if (current != NULL)
     {
-        PUT(current, bp);                     
-        PUT((unsigned int *)bp + 1, current); 
+        PUT(current, bp);
+        PUT((unsigned int *)bp + 1, current);
     }
     else
     {
-        PUT((unsigned int *)bp + 1, NULL); 
+        PUT((unsigned int *)bp + 1, NULL);
     }
 }
 
@@ -274,7 +274,9 @@ void *mm_malloc(size_t size)
     place(bp, asize);
     if (!GET_ALLOC(HDRP(bp)))
         return NEXT_BLKP(bp);
+    // if(checkBlock(bp))
     return bp;
+    // return NULL;
 }
 
 void *find_fit(size_t asize)
@@ -309,7 +311,7 @@ void place(void *bp, size_t asize)
     size_t rm_size = csize - asize;
     // 块已分配，从空闲链表中删除
     delete (bp);
-    if ((rm_size) >= 32*DSIZE)
+    if ((rm_size) >= 32 * DSIZE)
     {
         PUT(HDRP(bp), PACK(asize, 1));
         PUT(FTRP(bp), PACK(asize, 1));
@@ -343,6 +345,7 @@ void mm_free(void *ptr)
 // 重新分配内存块
 void *mm_realloc(void *ptr, size_t size)
 {
+    printBlock(ptr);
     if (ptr == NULL)
         return mm_malloc(size);
     else if (size == 0)
@@ -350,20 +353,23 @@ void *mm_realloc(void *ptr, size_t size)
         mm_free(ptr);
         return NULL;
     }
-    else if(size==GET_SIZE(HDRP(ptr)))
+    else if (size == GET_SIZE(HDRP(ptr)))
         return ptr;
     int prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(ptr)));
     int next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(ptr)));
     size_t oldsize = GET_SIZE(HDRP(ptr));
-    size_t newsize=size;
-    if(newsize<=DSIZE){
-        newsize = 2*DSIZE;
-    }else{
+    size_t newsize = size;
+    if (newsize <= DSIZE)
+    {
+        newsize = 2 * DSIZE;
+    }
+    else
+    {
         newsize = DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
     }
     size_t nextsize = GET_SIZE(HDRP(NEXT_BLKP(ptr)));
     size_t prevsize = GET_SIZE(HDRP(PREV_BLKP(ptr)));
-    if (!next_alloc & (oldsize +nextsize)>=newsize)
+    if (!next_alloc & (oldsize + nextsize) >= newsize)
     {
         delete (NEXT_BLKP(ptr));
         PUT(HDRP(ptr), PACK(oldsize + nextsize, 1));
@@ -371,33 +377,128 @@ void *mm_realloc(void *ptr, size_t size)
         place(ptr, newsize);
         return ptr;
     }
-    else if(!nextsize&&newsize>=oldsize)
+    else if (!nextsize && newsize >= oldsize)
     {
         size_t extend_size = newsize - oldsize;
-        if((long)(mem_sbrk(extend_size)) == -1)
-            return NULL; 
-        PUT(HDRP(ptr), PACK(newsize, 1));
-        PUT(FTRP(ptr), PACK(newsize, 1));
-        PUT(HDRP(NEXT_BLKP(ptr)), PACK(0, 1));
-        return ptr;
-    }
-    else if(GET_SIZE(NEXT_BLKP(NEXT_BLKP(ptr)))==0&&!next_alloc)
-    {
-        int extend_size=newsize-nextsize-oldsize;
-        delete(NEXT_BLKP(ptr));
-        if((long)(mem_sbrk(extend_size)) == -1)
+        if ((long)(mem_sbrk(extend_size)) == -1)
             return NULL;
         PUT(HDRP(ptr), PACK(newsize, 1));
         PUT(FTRP(ptr), PACK(newsize, 1));
         PUT(HDRP(NEXT_BLKP(ptr)), PACK(0, 1));
         return ptr;
     }
-    else{   // 直接分配
-        void* newptr = mm_malloc(newsize);
-        if(newptr == NULL)
+    else if (GET_SIZE(NEXT_BLKP(NEXT_BLKP(ptr))) == 0 && !next_alloc)
+    {
+        int extend_size = newsize - nextsize - oldsize;
+        delete (NEXT_BLKP(ptr));
+        if ((long)(mem_sbrk(extend_size)) == -1)
+            return NULL;
+        PUT(HDRP(ptr), PACK(newsize, 1));
+        PUT(FTRP(ptr), PACK(newsize, 1));
+        PUT(HDRP(NEXT_BLKP(ptr)), PACK(0, 1));
+        return ptr;
+    }
+    else
+    { // 直接分配
+        void *newptr = mm_malloc(newsize);
+        if (newptr == NULL)
             return 0;
         memcpy(newptr, ptr, MIN(oldsize, newsize));
         mm_free(ptr);
         return newptr;
     }
 }
+
+int checkBlock(void *bp)
+{
+    if ((size_t)bp % 8)
+    {
+        //printf("Error: %p is not doubleword aligned\n", bp);
+        return 0;
+    }
+    if (GET(HDRP(bp)) != GET(FTRP(bp)))
+    {
+        //printf("In block %p   Error: header does not match footer\n", bp);
+        return 0;
+    }
+    else
+    {
+        //printf("In block %p   Header matches footer\n", bp);
+        return 1;
+    }
+}
+
+void checkFreeList()
+{
+    int i;
+    void *bp;
+    void *head;
+    void *next;
+    for (i = 0; i < CLASS_SIZE; i++)
+    {
+        head = GET_HEAD(i);
+        if (head == NULL)
+            continue;
+        printf("Free list %d\n", i);
+        for (bp = head; bp != NULL; bp = next)
+        {
+            if(checkBlock(bp))
+                next = GET_SUC(bp);
+            else
+                return 0;
+        }
+        return 1;
+    }
+}
+
+void checkHeap()
+{
+    void *bp;
+    for (bp = heap_list; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp))
+    {
+        if(checkBlock(bp))
+            continue;
+        else
+            return 0;
+    }
+    return 1;
+}
+
+void printBlock(void *bp)
+{
+    size_t hsize, halloc, fsize, falloc;
+    //checkBlock(bp);
+    hsize = GET_SIZE(HDRP(bp));
+    halloc = GET_ALLOC(HDRP(bp));
+    fsize = GET_SIZE(FTRP(bp));
+    falloc = GET_ALLOC(FTRP(bp));
+    if (hsize == 0)
+    {
+        printf("%p: EOL\n", bp);
+        return;
+    }
+    printf("%p: header: [%zu:%c] footer: [%zu:%c]\n", bp,
+           hsize, (halloc ? 'a' : 'f'),
+           fsize, (falloc ? 'a' : 'f'));
+}
+
+void printFreeList()
+{
+    int i;
+    void *bp;
+    void *head;
+    void *next;
+    for (i = 0; i < CLASS_SIZE; i++)
+    {
+        head = GET_HEAD(i);
+        if (head == NULL)
+            continue;
+        printf("Free list %d\n", i);
+        for (bp = head; bp != NULL; bp = next)
+        {
+            printBlock(bp);
+            next = GET_SUC(bp);
+        }
+    }
+}
+
