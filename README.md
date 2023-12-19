@@ -13,5 +13,5 @@ finished
 finished score=50
 
 ## malloclab 
-finished score=92
+finished score=93
 
